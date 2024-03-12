@@ -1,0 +1,127 @@
+Resources:
+
+https://blog.stephensanwo.dev/build-a-fullstack-ai-chatbot/part-2-chat-server
+
+import asyncio
+import websockets
+
+async def server(websocket, path):
+    try:
+        async for message in websocket:
+            # Echo message back to the client
+            await websocket.send(message)
+    except websockets.exceptions.ConnectionClosedOK:
+        pass
+
+async def main():
+    # Define the number of servers
+    num_servers = 3
+    # Create a list to hold references to each server task
+    server_tasks = []
+    # Create multiple server instances
+    for _ in range(num_servers):
+        # Start a server on localhost, using a different port for each server
+        server_task = websockets.serve(server, "localhost", 8765)
+        server_tasks.append(server_task)
+
+    # Start all server tasks concurrently
+    await asyncio.gather(*server_tasks)
+
+# Run the event loop
+asyncio.run(main())
+
+imp:
+the code we write in app.py is the websocket server and the js (client side code) represents the web socket client that can send send and receive messages to the server 
+https://medium.com/@emmanueldavidson/building-a-websocket-server-with-fastapi-a-beginners-guide-c58fc08c3667
+
+Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [34166] using WatchFiles
+INFO:     Started server process [34168]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:53290 - "GET / HTTP/1.1" 200 OK
+INFO:     ('127.0.0.1', 53300) - "WebSocket /ws/506" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:46616 - "GET / HTTP/1.1" 200 OK
+INFO:     ('127.0.0.1', 54854) - "WebSocket /ws/384" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56256 - "GET / HTTP/1.1" 200 OK
+INFO:     ('127.0.0.1', 56282) - "WebSocket /ws/682" [accepted]
+INFO:     connection open
+
+import asyncio
+from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Create a dictionary to store the WebSocket connections
+connections = {}
+
+# Define the WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    # Add the WebSocket connection to the dictionary
+    connections[websocket] = True
+
+    # Wait for messages from the client
+    while True:
+        data = await websocket.receive_text()
+
+        # Send the message to all connected clients
+        for connection in connections:
+            await connection.send_text(data)
+
+# Create a function to start a WebSocket server
+async def start_websocket_server(host: str, port: int):
+    # Create a new FastAPI application
+    app = FastAPI()
+
+    # Add the WebSocket endpoint
+    @app.websocket("/ws")
+    async def websocket_endpoint(websocket: WebSocket):
+        # Add the WebSocket connection to the dictionary
+        connections[websocket] = True
+
+        # Wait for messages from the client
+        while True:
+            data = await websocket.receive_text()
+
+            # Send the message to all connected clients
+            for connection in connections:
+                await connection.send_text(data)
+
+    # Start the Uvicorn server
+    await uvicorn.run(app, host=host, port=port)
+
+# Create a function to start a WebSocket client
+async def start_websocket_client(host: str, port: int):
+    # Create a new WebSocket connection
+    websocket = await websockets.connect(f"ws://{host}:{port}/ws")
+
+    # Send a message to the server
+    await websocket.send_text("Hello from the client!")
+
+    # Wait for a message from the server
+    data = await websocket.receive_text()
+
+    # Print the message from the server
+    print(data)
+
+# Start the WebSocket servers and clients
+asyncio.create_task(start_websocket_server("localhost", 8000))
+asyncio.create_task(start_websocket_server("localhost", 8001))
+
+asyncio.create_task(start_websocket_client("localhost", 8000))
+asyncio.create_task(start_websocket_client("localhost", 8001))
+
+# Wait for all tasks to complete
+await asyncio.gather(*asyncio.all_tasks())
