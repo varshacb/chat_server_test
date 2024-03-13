@@ -9,47 +9,99 @@
 
 <body>
 	<h1>WebSocket </h1>
-	<input type="text" id="inputText" placeholder="Enter message">
-	<button id="submitButton">Submit</button>
-	<div id="container"></div>
+
+	<h3>Client 1 (Port 8000)</h3>
+	<input type="text" id="messageInput1" placeholder="Enter message (client 1)">
+	<button id="submitButton" onclick="sendMessage(1)">Send</button>
+	<div id="messageContainer1"></div>
+
+	<h3>Client 2 (Port 8000)</h3>
+	<input type="text" id="messageInput2" placeholder="Enter message (client 2)">
+	<button id="submitButton" onclick="sendMessage(2)">Send</button>
+	<div id="messageContainer2"></div>
+
+	<h3>Client 3 (Port 8001)</h3>
+	<input type="text" id="messageInput3" placeholder="Enter message (client 3)">
+	<button id="submitButton" onclick="sendMessage(3)">Send</button>
+	<div id="messageContainer3"></div>
+
+	<h3>Client 4 (Port 8001)</h3>
+	<input type="text" id="messageInput4" placeholder="Enter message (client 4)">
+	<button id="submitButton" onclick="sendMessage(4)">Send</button>
+	<div id="messageContainer4"></div>
+	
 
 	<script>
 		function getRandomInt(min, max) {
 			return Math.floor(Math.random() * (max - min + 1)) + min;
 		}
 
+		// const id = getRandomInt(1, 1000);
+        // const ports = [8000, 8001, 8002];
+        // const randomPort = ports[Math.floor(Math.random() * ports.length)];
+        // const socket = new WebSocket(`ws://127.0.0.1:${randomPort}/ws/${id}`);
+		// const socket = new WebSocket('ws://127.0.0.1:8001/ws/'+id);
+		// console.log('ws://127.0.0.1:8001/ws/'+id);
+
+		function connectWebSocket(port, clientNumber){
+			const websocket=new WebSocket(`ws://localhost:${port}/ws/${clientNumber}`);
+
+			websocket.onopen = function(event) {
+				console.log(`WebSocket connection ${clientNumber} established...ws://localhost:${port}/ws/${clientNumber}`);
+			};
+			websocket.onmessage = function(event) {
+            const messageContainer = document.getElementById(`messageContainer${clientNumber}`);
+            messageContainer.innerHTML += `<p>${event.data}</p>`;
+        };
+		websocket.onerror = function(event) {
+            console.error(`WebSocket error ${clientNumber}:`, event);
+        };
+		return websocket;
+		}
+		const websocket1 = connectWebSocket(8000, 1); // Connect client 1 to server running on port 8000
+		const websocket2 = connectWebSocket(8000, 2); // Connect client 2 to server running on port 8000
+        const websocket3 = connectWebSocket(8001, 3); // Connect client 3 to server running on port 8001
+		const websocket4 = connectWebSocket(8001, 4); // Connect client 4 to server running on port 8001
 		
-		const id = getRandomInt(1, 1000);
 
-		const socket = new WebSocket('ws://127.0.0.1:8000/ws/'+id);
-		console.log('ws://127.0.0.1:8000/ws/'+id)
 
-		function showMessage(message) {
-			const messageContainer = document.getElementById('container');
-			const messageElement = document.createElement('div');
-			messageElement.textContent = message;
-			messageContainer.appendChild(messageElement);
-		}
+		// function showMessage(message) {
+		// 	const messageContainer = document.getElementById('container');
+		// 	const messageElement = document.createElement('div');
+		// 	messageElement.textContent = message;
+		// 	messageContainer.appendChild(messageElement);
+		// }
 
-		socket.addEventListener('open', (event) => {
-			showMessage('Connected to server.');
-		});
+		// socket.addEventListener('open', (event) => {
+		// 	showMessage('Connected to server.');
+		// });
 
-		socket.onmessage = (event) => {
-			showMessage( event.data)  //"You sent : "+
-		}
+		// socket.onmessage = (event) => {
+		// 	showMessage( event.data)  //"You sent : "+
+		// }
 
-		socket.addEventListener('close', (event) => {
-			showMessage('Connection closed.');
-		});
+		// socket.addEventListener('close', (event) => {
+		// 	showMessage('Connection closed.');
+		// });
 
-		const inputText = document.getElementById("inputText");
-		const submitButton = document.getElementById("submitButton");
+		// const inputText = document.getElementById("inputText");
+		// const submitButton = document.getElementById("submitButton");
 
-		submitButton.addEventListener("click", function () {
-			const inputValue = inputText.value;
-			socket.send(inputValue)
-		});
+		// submitButton.addEventListener("click", function () {
+		// 	const inputValue = inputText.value;
+		// 	socket.send(inputValue)
+		// });
+		let websocket_arr=[websocket1,websocket2,websocket3,websocket4];
+
+		function sendMessage(clientNumber) {
+        const messageInput = document.getElementById(`messageInput${clientNumber}`);
+        const message = messageInput.value;
+        if (message !== "") {
+            const websocket = websocket_arr[clientNumber-1];
+            websocket.send(message);
+            messageInput.value = "";
+        }
+    }
 
 	</script>
 </body>

@@ -74,13 +74,13 @@ def run_server(port):
 
 if __name__ == "__main__":
 		processes=[]
-		ports=[8000,8001,8002]
+		ports=[8000,8001]
 		for port in ports:
 			process=multiprocessing.Process(target=run_server,args=(port,))
 			process.start()
 			processes.append(process)
 
-		for process in process:
+		for process in processes:
 			process.join()
 
 
