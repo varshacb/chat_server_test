@@ -10,7 +10,7 @@
 <body>
 	<h1>WebSocket </h1>
 
-	<h3>Client (Port 8000)</h3>
+	<h3>Client (Port 8001)</h3>
 	<input type="text" id="messageInput" placeholder="Enter message">
 	<button id="submitButton" onclick="sendMessage()">Send</button>
 	<div id="messageContainer"></div>
@@ -31,11 +31,7 @@
 		let maxNumber = 100;
 		let client_id = getRandomInt(minNumber, maxNumber);
 		console.log('Random Integer:', client_id);
-		port="{{port}}"
-		console.log(typeof(port))
-
-
-		const websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/0`);
+		const websocket=new WebSocket(`ws://localhost:8001/ws/${client_id}/1`);
 		websocket.onopen = function(event) {
 			console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
 		};
@@ -46,15 +42,14 @@
 	   websocket.onerror = function(event) {
 		console.error("WebSocket error", event);
 	   };
-
 		function sendMessage() {
         const messageInput = document.getElementById("messageInput");
         const message = messageInput.value;
-
-		websocket.send(message);
-		messageInput.value = "";
+        if (message !== "") {
+            websocket.send(message);
+            messageInput.value = "";
         }
-
+        }
 
 	</script>
 </body>
