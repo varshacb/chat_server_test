@@ -3,6 +3,7 @@ import uvicorn
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect,Depends,Request
+from fastapi_session import SessionMiddleware, get_session
 from uuid import uuid4
 import multiprocessing
 import datetime
@@ -71,25 +72,27 @@ class ConnectionManager:
 
 connectionmanager = ConnectionManager()
 
-def generate_session_id():
-    # Generate a random secure session ID
-    return secrets.token_hex(16)  # 16 bytes (32 hex characters) for the session ID
+# def generate_session_id():
+#     # Generate a random secure session ID
+#     return secrets.token_hex(16)  # 16 bytes (32 hex characters) for the session ID
 
-@app.get("/set_session")
-async def set_session(session = Depends(get_session)):
-    session_id = generate_session_id()
-    session["session_id"] = session_id
-    return {"message": "Session ID set successfully", "session_id": session_id}
+# @app.get("/set_session")
+# async def set_session(session = Depends(get_session)):
+#     session_id = generate_session_id()
+#     session["session_id"] = session_id
+#     return {"message": "Session ID set successfully", "session_id": session_id}
 
-@app.get("/get_session")
-async def get_session_id(session = Depends(get_session)):
-    session_id = session.get("session_id")
+# @app.get("/get_session")
+# async def get_session_id(session = Depends(get_session)):
+#     session_id = session.get("session_id")
 
 @app.get("/")
-async def home(request: Request):
-	session = request.session
+async def home(request: Request,session = Depends(get_session)):
+	# session = request.session
+	session['username']='varsh'
+	session_id = session.session_id
 	print("hello")
-	print(Request.session._session_id)
+	print(session_id)
 	port = request.query_params.get('var', '')
 	dict={'port':port}
 	# print(port)
