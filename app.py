@@ -50,40 +50,21 @@ class ConnectionManager:
 
 connectionmanager = ConnectionManager()
 
-my_dict = {
-        "Server1(8000)":0,
-         "Server2(8001)":0,
-         "Server3(8002)":0,
-         "Server4(8003)":0
-
-         }
-
-# @app.get("/")
-# def read_index(request: Request):
-#     threshold=2
-#     print(request)
-
-#     for index, (server, count) in enumerate(my_dict.items()):
-#         if count < threshold:
-#             my_dict[server] += 1
-#             print(f"{server}: {my_dict[server]}")
-#             return templates.TemplateResponse(f"index{index}.html", {"request": request})
-
-#     return {"message": "All servers have reached the threshold"}
-        # else:
-        #     return templates.TemplateResponse("index"+str(t)+".html", {"request" : request})
-@app.get("/target")
+@app.get("/")
 async def home(request: Request):
-    port = request.query_params.get('var', '')
-    dict={'port':port}
-    # print("abc"+var)
-
-    return templates.TemplateResponse("index.html", {"request" : request, **dict})
+	port = request.query_params.get('var', '')
+	global my_dict
+	my_dict=request.query_params.get('my_dict','')
+	dict={'port':port}
+	# print(port)
+	return templates.TemplateResponse("index.html", {"request" : request, **dict})
 
 @app.websocket("/ws/{client_id}/{server}")
 async def websocket_endpoint(websocket: WebSocket):
 
 	await connectionmanager.connect(websocket)
+	print(my_dict)
+
 	# session["user_id"] = websocket.client.id
 # session: SessionParameters = Depends(get_session)
 
@@ -96,7 +77,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 	except WebSocketDisconnect:
 		connectionmanager.disconnect(websocket)
-		await connectionmanager.broadcast(f"Client  left the chat")
+		await connectionmanager.broadcast(f"Client left the chat")
 
 def run_server(port):
 	uvicorn.run(app, host="127.0.0.1", port=port)
@@ -145,3 +126,20 @@ if __name__ == "__main__":
 	# print(sessions)
 	# print(active_sessions)
 #  , client_id: int,s_id:str
+
+
+
+# @app.get("/")
+# def read_index(request: Request):
+#     threshold=2
+#     print(request)
+
+#     for index, (server, count) in enumerate(my_dict.items()):
+#         if count < threshold:
+#             my_dict[server] += 1
+#             print(f"{server}: {my_dict[server]}")
+#             return templates.TemplateResponse(f"index{index}.html", {"request": request})
+
+#     return {"message": "All servers have reached the threshold"}
+        # else:
+        #     return templates.TemplateResponse("index"+str(t)+".html", {"request" : request})
