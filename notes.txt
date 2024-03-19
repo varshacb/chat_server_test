@@ -1,0 +1,23 @@
+i need to do disconnect of a socket in backend and prob in passing the global variable namebased on this disconnection the dictionary needs to be updated
+{% comment %} if (message == "close") {
+	websocket.send(message);
+	websocket.close();
+	break;
+} {% endcomment %}
+
+# if(data=="close"):
+			# 	websocket.close()
+			# 	for index, (server, count) in enumerate(my_dict.items()):
+			# 		if(index==server):
+			# 			my_dict[server]-=1
+			# 	print(my_dict)
+			# 	break
+
+
+
+one table server name : server portno. availability
+
+
+like write a function -- that returns a port number and based on thaat direct else make the request sleep for 300 seconds
+
+chk the error might not occur there 
