@@ -7,52 +7,37 @@ from uuid import uuid4
 import multiprocessing
 from pymongo import MongoClient
 from pydantic import BaseModel
+from bson.objectid import ObjectId
+from dotenv import load_dotenv
+import os
 
-
+load_dotenv()
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-class Item(BaseModel):
-    name: str
 
+MONGO_URI = os.environ.get('MONGO_URI')
 
-my_dict = {
-
-         "http://localhost:8001":0,
-         "http://localhost:8002":0,
-         "http://localhost:8003":0
-
-         }
-client = MongoClient("mongodb+srv://last:last1@pythoncluster.0zzvm.mongodb.net/")
+client = MongoClient(MONGO_URI)
 database = client["server_db"]
 collection_name = 'server_connections'
 collection=database[collection_name]
 
 @app.get("/")
 def read_index(request: Request):
-    message = {
-        "channel": "dev",
-        "author": "cerami",
-        "text": "Hello, world!"
-    }
-
-    result = collection.insert_one(message)
-    print("hi"+ str(result.inserted_id))
-    x = collection.find_one()
-
-    print("hi"+ str(type(x)))
 
     threshold=2
-    print(request)
-
-    for index, (server, count) in enumerate(my_dict.items()):
+    server_connections = collection.find_one()
+    server_dict=server_connections.get("server")
+    for index,(server,count) in enumerate(server_dict.items()):
         if count < threshold:
-            my_dict[server] += 1
-            print(f"{server}: {my_dict[server]}")
+            server_dict[server]=count+1
+            # print("done")
             port=8000+(index+1)
-            return RedirectResponse(url=server+f"/?var={port}&my_dict={my_dict}", status_code=307)# Replace with the actual destination server URL
-
-            # return templates.TemplateResponse(f"index{index}.html", {"request": request})
-
+            result = collection.update_one(
+                    {"_id": ObjectId("65f9a73270de3cd09a3770b4")},
+                    {"$set": {"server": server_dict}}
+                    )
+            return RedirectResponse(url=server+f"/?var={port}", status_code=307)
     return {"message": "All servers have reached the threshold"}
 
 
