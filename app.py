@@ -1,11 +1,9 @@
 from typing import List
-import uvicorn
+import uvicorn, multiprocessing, secrets, json
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect,Depends,Request
 from uuid import uuid4
-import multiprocessing
-import secrets
 from pymongo import MongoClient
 from pydantic import BaseModel
 from bson.objectid import ObjectId
@@ -86,16 +84,29 @@ async def websocket_endpoint(websocket: WebSocket):
 		await connectionmanager.broadcast(f"Client left the chat",websocket)
 
 
-@app.post("/logout")
-async def logout(request: Request):
+@app.post("/logout/{server_id}")
+async def logout(request: Request,server_id:str):
+		# s=server_id
 		session=request.session
 		print("hello")
 		if "session_id" in session:
 			session.pop("session_id")
 			session.pop("username")
-		print("heyoo done")
 
-   
+		string_build="http://localhost:"+server_id
+		print(string_build)
+		f = open('server_connections.json')
+		data = json.load(f)
+		dict = data["server_connections"]
+		f.close()
+		for key in dict:
+			if(key == string_build):
+				dict[key]-=1
+		f1 = open('server_connections.json','w')
+		print(dict)
+		data['server_connections'] = dict
+		json.dump(data,f1)
+		print("done")
 
 
 def run_server(port):

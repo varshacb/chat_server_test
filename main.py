@@ -28,6 +28,10 @@ def generate_session_id():
 
 def server_availability(request:Request):
     threshold = 2
+    f = open('server_connections.json')
+    data = json.load(f)
+    dict = data["server_connections"]
+    f.close()
     for key in dict:
          if(dict[key]<threshold):
               return True
@@ -35,6 +39,10 @@ def server_availability(request:Request):
 
 def allocate_server():
     threshold = 2
+    f = open('server_connections.json')
+    data = json.load(f)
+    dict = data["server_connections"]
+    f.close()
     for index,(server,count) in enumerate(dict.items()):
         if count < threshold:
             port=8000+(index+1)
@@ -83,7 +91,7 @@ def read_index(request: Request):
     # return {"all servers are busy"}
     else:
         print("hi")
-        msg = handle_client(request)
+        msg = handle_client(request) #need to handle if it returns a redirectresponse
         return msg
     #     return{"msg":"hello"}
             

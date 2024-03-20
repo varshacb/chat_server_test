@@ -25,6 +25,9 @@ chk the error might not occur there
 session.pop()
 handle_client() function is returning a msg if no availability but it redirects otherwise need to handle that as well
 
+need to handle two parts while making multiple client requests it needs to identify that the server has become available
+and while waiting time also it has to identify
+
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
