@@ -24,7 +24,7 @@ f.close()
 
 
 def generate_session_id():
-    return secrets.token_hex(16)  
+    return secrets.token_hex(16)
 
 def server_availability(request:Request):
     threshold = 2
@@ -54,7 +54,7 @@ def allocate_server():
             return rd
 
 def handle_client(request: Request):
-    max_wait_time = 5 
+    max_wait_time = 5
     start_time = time.time()
 
     while True:
@@ -67,11 +67,11 @@ def handle_client(request: Request):
             server = conf["server"]
             port = conf["port"]
             return RedirectResponse(url=server+f"/?var={port}", status_code=307)
-        
+
         elapsed_time = time.time() - start_time
         if elapsed_time >= max_wait_time:
             return {"no server available even after 5 minutes "}
-        time.sleep(2) 
+        time.sleep(2)
 
 
 
@@ -94,7 +94,7 @@ def read_index(request: Request):
         msg = handle_client(request) #need to handle if it returns a redirectresponse
         return msg
     #     return{"msg":"hello"}
-            
+
 
 if __name__ == "__main__":
 
