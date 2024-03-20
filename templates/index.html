@@ -54,6 +54,10 @@
 		websocket.send(message);
 		messageInput.value = "";
         }
+		window.addEventListener('beforeunload', function (e) {
+            // Make API request to logout endpoint
+            fetch('/logout', { method: 'POST' });
+        });
 
 
 	</script>

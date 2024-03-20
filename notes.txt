@@ -21,3 +21,22 @@ one table server name : server portno. availability
 like write a function -- that returns a port number and based on thaat direct else make the request sleep for 300 seconds
 
 chk the error might not occur there 
+
+session.pop()
+handle_client() function is returning a msg if no availability but it redirects otherwise need to handle that as well
+
+app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+SECRET_KEY = "mysecretkey"
+SESSION_COOKIE_NAME = "mycookie"
+
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, session_cookie=SESSION_COOKIE_NAME)
+
+@app.get("/")
+async def home(request: Request):
+	session = request.session
+	session_id = generate_session_id()
+	session["session_id"] = session_id
+	session["username"]="client#"
+	print(session.get("session_id"))

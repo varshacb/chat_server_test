@@ -5,7 +5,6 @@ from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect,Depends,Request
 from uuid import uuid4
 import multiprocessing
-import datetime
 import secrets
 from pymongo import MongoClient
 from pydantic import BaseModel
@@ -20,7 +19,6 @@ SECRET_KEY = "mysecretkey"
 SESSION_COOKIE_NAME = "mycookie"
 
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, session_cookie=SESSION_COOKIE_NAME)
-
 
 
 # client = MongoClient("mongodb+srv://last:last1@pythoncluster.0zzvm.mongodb.net/")
@@ -73,7 +71,7 @@ async def home(request: Request):
 
 @app.websocket("/ws/{client_id}/{server_id}")
 async def websocket_endpoint(websocket: WebSocket):
-	
+
 	await connectionmanager.connect(websocket)
 
 	try:
@@ -85,7 +83,20 @@ async def websocket_endpoint(websocket: WebSocket):
 
 	except WebSocketDisconnect:
 		connectionmanager.disconnect(websocket)
-		await connectionmanager.broadcast(f"Client left the chat")
+		await connectionmanager.broadcast(f"Client left the chat",websocket)
+
+
+@app.post("/logout")
+async def logout(request: Request):
+		session=request.session
+		print("hello")
+		if "session_id" in session:
+			session.pop("session_id")
+			session.pop("username")
+		print("heyoo done")
+
+   
+
 
 def run_server(port):
 	uvicorn.run(app, host="127.0.0.1", port = port)
