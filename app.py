@@ -3,47 +3,30 @@ import uvicorn
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect,Depends,Request
-from fastapi_session import SessionMiddleware, get_session
 from uuid import uuid4
 import multiprocessing
 import datetime
-
+import secrets
 from pymongo import MongoClient
 from pydantic import BaseModel
 from bson.objectid import ObjectId
-# from fastapi_sessions import  SessionParameters,get_session
 from starlette.middleware.sessions import SessionMiddleware
 
 
-
-
 app = FastAPI()
+
 templates = Jinja2Templates(directory="templates")
-# Secret key for session encryption
 SECRET_KEY = "mysecretkey"
-# Name of the session cookie
 SESSION_COOKIE_NAME = "mycookie"
 
-# Initialize session middleware
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, session_cookie=SESSION_COOKIE_NAME)
 
 
 
-client = MongoClient("mongodb+srv://last:last1@pythoncluster.0zzvm.mongodb.net/")
-database = client["server_db"]
-collection_name = 'server_connections'
-collection=database[collection_name]
-
-sessions={}
-
-# app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
-
-class Session:
-    def __init__(self, websocket: WebSocket,server_id:str):
-        self.id = str(uuid4())
-        self.websocket = websocket
-        self.server_assigned = server_id
-        # self.last_active = datetime.now()
+# client = MongoClient("mongodb+srv://last:last1@pythoncluster.0zzvm.mongodb.net/")
+# database = client["server_db"]
+# collection_name = 'server_connections'
+# collection=database[collection_name]
 
 class ConnectionManager:
 
@@ -72,46 +55,32 @@ class ConnectionManager:
 
 connectionmanager = ConnectionManager()
 
-# def generate_session_id():
-#     # Generate a random secure session ID
-#     return secrets.token_hex(16)  # 16 bytes (32 hex characters) for the session ID
 
-# @app.get("/set_session")
-# async def set_session(session = Depends(get_session)):
-#     session_id = generate_session_id()
-#     session["session_id"] = session_id
-#     return {"message": "Session ID set successfully", "session_id": session_id}
+def generate_session_id():
+    return secrets.token_hex(16)  
 
-# @app.get("/get_session")
-# async def get_session_id(session = Depends(get_session)):
-#     session_id = session.get("session_id")
 
 @app.get("/")
-async def home(request: Request,session = Depends(get_session)):
-	# session = request.session
-	session['username']='varsh'
-	session_id = session.session_id
-	print("hello")
-	print(session_id)
+async def home(request: Request):
+	session = request.session
+	session_id = generate_session_id()
+	session["session_id"] = session_id
+	session["username"]="client#"
+	print(session.get("session_id"))
 	port = request.query_params.get('var', '')
 	dict={'port':port}
-	# print(port)
 	return templates.TemplateResponse("index.html", {"request" : request, **dict})
 
-@app.websocket("/ws/{client_id}/{server}")
+@app.websocket("/ws/{client_id}/{server_id}")
 async def websocket_endpoint(websocket: WebSocket):
-
+	
 	await connectionmanager.connect(websocket)
-
-
-	# session["user_id"] = websocket.client.id
-# session: SessionParameters = Depends(get_session)
 
 	try:
 		while True:
 
-			data = await websocket.receive_text() # server is receiving the msg from the client
-			await connectionmanager.send_personal_message(f"You : {data}", websocket) # sending the received client msg back to the client to show that the send has ocurred
+			data = await websocket.receive_text() 
+			await connectionmanager.send_personal_message(f"You : {data}", websocket) 
 			await connectionmanager.broadcast(f"Client #: {data}", websocket)
 
 	except WebSocketDisconnect:
@@ -119,7 +88,7 @@ async def websocket_endpoint(websocket: WebSocket):
 		await connectionmanager.broadcast(f"Client left the chat")
 
 def run_server(port):
-	uvicorn.run(app, host="127.0.0.1", port=port)
+	uvicorn.run(app, host="127.0.0.1", port = port)
 
 if __name__ == "__main__":
 		processes=[]
@@ -131,16 +100,6 @@ if __name__ == "__main__":
 
 		for process in processes:
 			process.join()
-
-
-
-
-
-
-
-
-
-
 
 
 
