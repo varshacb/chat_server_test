@@ -9,13 +9,21 @@ from pymongo import MongoClient
 from pydantic import BaseModel
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
-import os, json
-import time
-import secrets
+import os, json,secrets,time
+from starlette.middleware.sessions import SessionMiddleware
+
+
 
 load_dotenv()
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+
+SECRET_KEY = "xvbnjlai"
+
+
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+
 
 f = open('server_connections.json')
 data = json.load(f)
@@ -37,6 +45,7 @@ def server_availability(request:Request):
               return True
     return False
 
+
 def allocate_server():
     threshold = 2
     f = open('server_connections.json')
@@ -52,12 +61,16 @@ def allocate_server():
             json.dump(data,f1)
             rd={"server":server,"port":port}
             return rd
+        
 
 def handle_client(request: Request):
-    max_wait_time = 5
+    max_wait_time = 60
     start_time = time.time()
+    elapsed_time = 0
 
-    while True:
+    while elapsed_time < max_wait_time:
+        # b= server_availability(request)
+        # print("inside handle client: "+ str(b))
         if server_availability(request):
             # session = request.session
             # session_id = generate_session_id()
@@ -71,7 +84,7 @@ def handle_client(request: Request):
         elapsed_time = time.time() - start_time
         if elapsed_time >= max_wait_time:
             return {"no server available even after 5 minutes "}
-        time.sleep(2)
+        time.sleep(1)
 
 
 
@@ -90,10 +103,10 @@ def read_index(request: Request):
         return RedirectResponse(url=server+f"/?var={port}", status_code=307)
     # return {"all servers are busy"}
     else:
-        print("hi")
-        msg = handle_client(request) #need to handle if it returns a redirectresponse
-        return msg
-    #     return{"msg":"hello"}
+        # print("hi")
+        res = handle_client(request) 
+        return res
+
 
 
 if __name__ == "__main__":

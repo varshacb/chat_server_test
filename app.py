@@ -13,10 +13,9 @@ from starlette.middleware.sessions import SessionMiddleware
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
-SECRET_KEY = "mysecretkey"
-SESSION_COOKIE_NAME = "mycookie"
+SECRET_KEY = "bkhkjpo"
 
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, session_cookie=SESSION_COOKIE_NAME)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 
 # client = MongoClient("mongodb+srv://last:last1@pythoncluster.0zzvm.mongodb.net/")
@@ -62,7 +61,7 @@ async def home(request: Request):
 	session_id = generate_session_id()
 	session["session_id"] = session_id
 	session["username"]="client#"
-	print(session.get("session_id"))
+	# print("hello"+session.get("session_id"))
 	port = request.query_params.get('var', '')
 	dict={'port':port}
 	return templates.TemplateResponse("index.html", {"request" : request, **dict})
@@ -88,13 +87,13 @@ async def websocket_endpoint(websocket: WebSocket):
 async def logout(request: Request,server_id:str):
 		# s=server_id
 		session=request.session
-		print("hello")
+		# print("hello")
 		if "session_id" in session:
 			session.pop("session_id")
 			session.pop("username")
 
 		string_build="http://localhost:"+server_id
-		print(string_build)
+		# print("the closed server:"+string_build)
 		f = open('server_connections.json')
 		data = json.load(f)
 		dict = data["server_connections"]
@@ -103,10 +102,10 @@ async def logout(request: Request,server_id:str):
 			if(key == string_build):
 				dict[key]-=1
 		f1 = open('server_connections.json','w')
-		print(dict)
+		# print(dict)
 		data['server_connections'] = dict
 		json.dump(data,f1)
-		print("done")
+		# print("done")
 
 
 def run_server(port):

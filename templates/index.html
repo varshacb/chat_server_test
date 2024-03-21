@@ -55,7 +55,6 @@
 		messageInput.value = "";
         }
 		window.addEventListener('beforeunload', function (e) {
-            // Make API request to logout endpoint
             fetch('/logout/'+port, { method: 'POST' });
         });
 
