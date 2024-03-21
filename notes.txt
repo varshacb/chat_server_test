@@ -43,3 +43,13 @@ async def home(request: Request):
 	session["session_id"] = session_id
 	session["username"]="client#"
 	print(session.get("session_id"))
+
+	
+Server's user interface should have the following property:
+a. Name of the server. Example: Server A, Server B
+b. Date and Time.
+c. Number of clients attended so far for the day.
+d. Number of clients attended so far for the month.
+e. Average of ratings provided by client. (This could be ranging from 5 to 1)
+f. Total number of clients approached this chat server and total count of lost client.
+g. Name of the current client communicating with.

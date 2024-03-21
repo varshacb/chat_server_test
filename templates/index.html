@@ -4,19 +4,27 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>WebSocket </title>
+	<title>Chat Server </title>
 </head>
 
 <body>
-	<h1>WebSocket </h1>
+	<h1>Chat Window </h1>
+	<div id="client">
+	</div>
+	<div id="server"></div>
+	<div id="dateTimeDisplay"></div>
+	<br><br>
 
-	<h3>Client</h3>
 	<input type="text" id="messageInput" placeholder="Enter message">
 	<button id="submitButton" onclick="sendMessage()">Send</button>
 	<div id="messageContainer"></div>
+	<br><br>
+	<button id="finishButton" onclick="getRating()">Finish</button>
+	<div id="ratingForm"></div>
 
 
 	<script>
+		updateDateTime();
 		let randomFloat = Math.random();
         console.log('Random Float:', randomFloat);
 
@@ -31,9 +39,12 @@
 		let maxNumber = 100;
 		let client_id = getRandomInt(minNumber, maxNumber);
 		console.log('Random Integer:', client_id);
+		document.getElementById('client').innerText = `CLIENT # ${client_id}`;
+		
 		port="{{port}}"
 		console.log(typeof(port))
-
+		document.getElementById('server').innerText = `Connected to server running at port : ${port}`;
+		
 
 		const websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/0`);
 		websocket.onopen = function(event) {
@@ -57,6 +68,35 @@
 		window.addEventListener('beforeunload', function (e) {
             fetch('/logout/'+port, { method: 'POST' });
         });
+		function updateDateTime() {
+		const currentDate = new Date();
+		const formattedDateTime = currentDate.toLocaleString();
+		document.getElementById('dateTimeDisplay').innerText = formattedDateTime;
+		setInterval(updateDateTime, 1000);
+
+		}
+
+		function getRating(){
+			var form = document.createElement("form");
+			// form.setAttribute("method", "post");
+			// form.setAttribute("method", "post");
+			// var action = "/logout/"+port
+			// form.setAttribute("action", "/");
+			var FN = document.createElement("input");
+			FN.setAttribute("type", "number");
+			FN.setAttribute("name", "Rating");
+			FN.setAttribute("placeholder", "Rate the communication (1 to 5)");
+			var s = document.createElement("input");
+			s.setAttribute("type", "submit");
+			s.setAttribute("value", "Submit");
+			form.appendChild(FN); 
+			// form.appendChild(br.cloneNode()); 
+			form.appendChild(s); 
+
+			document.getElementById("ratingForm").appendChild(form) ;
+
+		}
+
 
 
 	</script>
@@ -64,6 +104,23 @@
 
 </html>
 
+
+
+<!-- <div id="dateTimeDisplay"></div>
+
+<script>
+  // Function to update the date and time display
+  function updateDateTime() {
+    const currentDate = new Date();
+    const formattedDateTime = currentDate.toLocaleString();
+    document.getElementById('dateTimeDisplay').innerText = formattedDateTime;
+  }
+
+  // Call the updateDateTime function initially to display the current date and time
+  updateDateTime();
+
+  // Update the date and time every second (1000 milliseconds)
+  setInterval(updateDateTime, 1000); -->
 
 
 

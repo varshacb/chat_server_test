@@ -72,10 +72,10 @@ def handle_client(request: Request):
         # b= server_availability(request)
         # print("inside handle client: "+ str(b))
         if server_availability(request):
-            # session = request.session
-            # session_id = generate_session_id()
-            # session["session_id"] = session_id
-            # session["username"]="client#"
+            session = request.session
+            session_id = generate_session_id()
+            session["session_id"] = session_id
+            session["username"]="client#"
             conf = allocate_server()
             server = conf["server"]
             port = conf["port"]
@@ -83,20 +83,23 @@ def handle_client(request: Request):
 
         elapsed_time = time.time() - start_time
         if elapsed_time >= max_wait_time:
-            return {"no server available even after 5 minutes "}
+            session = request.session
+            if "session_id" in session:
+                session.pop("session_id")
+                session.pop("username")
+            return {"Session ended due to server unavailablity..Kindly start a new session later "}
         time.sleep(1)
 
 
 
 @app.get("/")
 def read_index(request: Request):
-    a=server_availability(request)
-    print(a)
-    if(a):
-        # session = request.session
-        # session_id = generate_session_id()
-        # session["session_id"] = session_id
-        # session["username"]="client#"
+
+    if(server_availability(request)):
+        session = request.session
+        session_id = generate_session_id()
+        session["session_id"] = session_id
+        session["username"]="client#"
         conf = allocate_server()
         server = conf["server"]
         port = conf["port"]

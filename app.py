@@ -67,7 +67,7 @@ async def home(request: Request):
 	return templates.TemplateResponse("index.html", {"request" : request, **dict})
 
 @app.websocket("/ws/{client_id}/{server_id}")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket,client_id: int):
 
 	await connectionmanager.connect(websocket)
 
@@ -76,11 +76,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
 			data = await websocket.receive_text() 
 			await connectionmanager.send_personal_message(f"You : {data}", websocket) 
-			await connectionmanager.broadcast(f"Client #: {data}", websocket)
+			await connectionmanager.broadcast(f"Client {client_id}#: {data}", websocket)
 
 	except WebSocketDisconnect:
 		connectionmanager.disconnect(websocket)
-		await connectionmanager.broadcast(f"Client left the chat",websocket)
+		# await connectionmanager.broadcast(f"Client left the chat",websocket)
 
 
 @app.post("/logout/{server_id}")
@@ -92,20 +92,23 @@ async def logout(request: Request,server_id:str):
 			session.pop("session_id")
 			session.pop("username")
 
-		string_build="http://localhost:"+server_id
+		server_string="http://localhost:"+server_id
 		# print("the closed server:"+string_build)
 		f = open('server_connections.json')
 		data = json.load(f)
 		dict = data["server_connections"]
 		f.close()
 		for key in dict:
-			if(key == string_build):
+			if(key == server_string):
 				dict[key]-=1
 		f1 = open('server_connections.json','w')
 		# print(dict)
 		data['server_connections'] = dict
 		json.dump(data,f1)
 		# print("done")
+
+# @app.get("/servr_ui")
+# async def server_ui():
 
 
 def run_server(port):
