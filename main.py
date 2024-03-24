@@ -69,8 +69,6 @@ def handle_client(request: Request):
     elapsed_time = 0
 
     while elapsed_time < max_wait_time:
-        # b= server_availability(request)
-        # print("inside handle client: "+ str(b))
         if server_availability(request):
             session = request.session
             session_id = generate_session_id()
