@@ -107,9 +107,6 @@ async def logout(request: Request,server_id:str):
 		json.dump(data,f1)
 		# print("done")
 
-# @app.get("/servr_ui")
-# async def server_ui():
-
 
 def run_server(port):
 	uvicorn.run(app, host="127.0.0.1", port = port)
@@ -130,38 +127,3 @@ if __name__ == "__main__":
 
 
 
-
-
-# the accept() fn. is called inside the connect fn. above
-	# session_token = str(uuid4())
-	# active_sessions={}
-	# active_sessions[session_token] = websocket
-	# active_sessions["client_id"]=client_id
-
-# await connectionmanager.send_personal_message(f"Server : hi from server", websocket) # the server also replies with its msg to the client
-
-#now these two msgs need to be received by the client (there we have the client side code in js in which onmessage event is triggered by the socket obj and the)
-
- # calling the connect fn in the above class (using the class obj ) which accepts the conn
-	# session = Session(websocket,s_id)
-	# sessions[session.id] = session
-	# print(sessions)
-	# print(active_sessions)
-#  , client_id: int,s_id:str
-
-
-
-# @app.get("/")
-# def read_index(request: Request):
-#     threshold=2
-#     print(request)
-
-#     for index, (server, count) in enumerate(my_dict.items()):
-#         if count < threshold:
-#             my_dict[server] += 1
-#             print(f"{server}: {my_dict[server]}")
-#             return templates.TemplateResponse(f"index{index}.html", {"request": request})
-
-#     return {"message": "All servers have reached the threshold"}
-        # else:
-        #     return templates.TemplateResponse("index"+str(t)+".html", {"request" : request})
