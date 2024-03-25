@@ -105,3 +105,8 @@ Threads play a crucial role in the development of a chat application, particular
 6. **Synchronization Threads:** When multiple threads access shared data structures (e.g., chat message queue, user list), synchronization mechanisms such as locks, semaphores, or monitors are used to ensure thread safety and prevent data corruption or race conditions. This is crucial in maintaining the integrity of chat data and preventing concurrency issues.
 
 By leveraging threads effectively in a chat application, developers can achieve efficient concurrency management, improve responsiveness, handle simultaneous user interactions, and provide a seamless chatting experience for users across different platforms and devices.
+
+
+has a master server the slave server instances create a websocket connection with the master server and the slaves will handle these connections in the end
+a process forks and creates child processes and the child 
+a websocket conn is created between the slave and the child process

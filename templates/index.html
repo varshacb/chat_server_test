@@ -46,7 +46,7 @@
 		document.getElementById('server').innerText = `Connected to server running at port : ${port}`;
 		
 
-		const websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/0`);
+		const websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/${port}`);
 		websocket.onopen = function(event) {
 			console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
 		};
