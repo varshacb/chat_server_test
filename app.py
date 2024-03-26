@@ -8,6 +8,7 @@ from pymongo import MongoClient
 from pydantic import BaseModel
 from bson.objectid import ObjectId
 from starlette.middleware.sessions import SessionMiddleware
+from main import alter_semaphore
 
 
 app = FastAPI()

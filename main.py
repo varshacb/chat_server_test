@@ -30,26 +30,35 @@ data = json.load(f)
 dict = data["server_connections"]
 f.close()
 
-
+def alter_semaphore():
+    h=0
 def generate_session_id():
     return secrets.token_hex(16)
 
 def server_availability(request:Request):
-    threshold = 2
+    threshold = 10
     f = open('server_connections.json')
-    data = json.load(f)
+    try:
+        data = json.load(f)
+        time.sleep(2)
+    except:
+        print("json error 2")
     dict = data["server_connections"]
     f.close()
     for key in dict:
-         if(dict[key]<threshold):
+         if(dict[key] < threshold):
               return True
     return False
 
 
 def allocate_server():
-    threshold = 2
+    threshold = 10
     f = open('server_connections.json')
-    data = json.load(f)
+    try:
+        data = json.load(f)
+        time.sleep(2)
+    except:
+        print("json error 1")
     dict = data["server_connections"]
     f.close()
     for index,(server,count) in enumerate(dict.items()):
@@ -59,6 +68,7 @@ def allocate_server():
             data["server_connections"] = dict
             f1 = open('server_connections.json','w')
             json.dump(data,f1)
+            # time.sleep(2)
             rd={"server":server,"port":port}
             return rd
         
