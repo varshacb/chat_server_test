@@ -23,28 +23,20 @@ SECRET_KEY = "xvbnjlai"
 
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
+global dict 
+
+dict = {
+    "http://localhost:8001": 0,
+    "http://localhost:8002": 0,
+    "http://localhost:8003": 0
+}
 
 
-f = open('server_connections.json')
-data = json.load(f)
-dict = data["server_connections"]
-f.close()
-
-def alter_semaphore():
-    h=0
 def generate_session_id():
     return secrets.token_hex(16)
 
 def server_availability(request:Request):
-    threshold = 10
-    f = open('server_connections.json')
-    try:
-        data = json.load(f)
-        time.sleep(2)
-    except:
-        print("json error 2")
-    dict = data["server_connections"]
-    f.close()
+    threshold = 1
     for key in dict:
          if(dict[key] < threshold):
               return True
@@ -52,23 +44,13 @@ def server_availability(request:Request):
 
 
 def allocate_server():
-    threshold = 10
-    f = open('server_connections.json')
-    try:
-        data = json.load(f)
-        time.sleep(2)
-    except:
-        print("json error 1")
-    dict = data["server_connections"]
-    f.close()
+    threshold = 1
     for index,(server,count) in enumerate(dict.items()):
         if count < threshold:
             port=8000+(index+1)
+            print(server)
             dict[server] = count+1
-            data["server_connections"] = dict
-            f1 = open('server_connections.json','w')
-            json.dump(data,f1)
-            # time.sleep(2)
+            print(dict)
             rd={"server":server,"port":port}
             return rd
         
@@ -99,6 +81,14 @@ def handle_client(request: Request):
         time.sleep(1)
 
 
+def alter_semaphore(server_string):
+    for key in dict:
+        if(key == server_string):
+            dict[key]-=1
+    print(dict)
+
+
+
 
 @app.get("/")
 def read_index(request: Request):
@@ -114,7 +104,6 @@ def read_index(request: Request):
         return RedirectResponse(url=server+f"/?var={port}", status_code=307)
     # return {"all servers are busy"}
     else:
-        # print("hi")
         res = handle_client(request) 
         return res
 

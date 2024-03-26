@@ -8,7 +8,7 @@ from pymongo import MongoClient
 from pydantic import BaseModel
 from bson.objectid import ObjectId
 from starlette.middleware.sessions import SessionMiddleware
-from main import alter_semaphore
+from main import alter_semaphore,dict
 
 
 app = FastAPI()
@@ -95,18 +95,9 @@ async def logout(request: Request,server_id:str):
 
 		server_string="http://localhost:"+server_id
 		# print("the closed server:"+string_build)
-		f = open('server_connections.json')
-		data = json.load(f)
-		dict = data["server_connections"]
-		f.close()
-		for key in dict:
-			if(key == server_string):
-				dict[key]-=1
-		f1 = open('server_connections.json','w')
-		# print(dict)
-		data['server_connections'] = dict
-		json.dump(data,f1)
-		# print("done")
+		print(dict)
+		alter_semaphore(server_string)
+			
 
 
 def run_server(port):
