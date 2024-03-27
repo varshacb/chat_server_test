@@ -20,11 +20,6 @@ SECRET_KEY = "bkhkjpo"
 
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-# load_dotenv()
-# client = MongoClient("mongodb+srv://last:last1@pythoncluster.0zzvm.mongodb.net/")
-# database = client["server_db"]
-# collection_name = 'server_connections'
-# collection=database[collection_name]
 
 class ConnectionManager:
 
@@ -46,7 +41,7 @@ class ConnectionManager:
 
 
 	async def broadcast(self, message: str, websocket: WebSocket):
-		print("inside broadcast method ")
+		# print("inside broadcast method ")
 		tasks = [connection.send_text(message) for connection in self.active_connections]
 		await asyncio.gather(*tasks)	
 			# if(connection == websocket):

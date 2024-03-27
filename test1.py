@@ -8,7 +8,7 @@ import time
 # 100 clients and 1000 messages and 3 server 
 # server side , api use 
 
-count = 50
+count = 100
 with open("messages.txt",'r') as file:
      data = (file.read()).split("\n")
     #  print(data)
