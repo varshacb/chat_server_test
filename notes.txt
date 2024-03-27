@@ -105,3 +105,9 @@ Threads play a crucial role in the development of a chat application, particular
 6. **Synchronization Threads:** When multiple threads access shared data structures (e.g., chat message queue, user list), synchronization mechanisms such as locks, semaphores, or monitors are used to ensure thread safety and prevent data corruption or race conditions. This is crucial in maintaining the integrity of chat data and preventing concurrency issues.
 
 By leveraging threads effectively in a chat application, developers can achieve efficient concurrency management, improve responsiveness, handle simultaneous user interactions, and provide a seamless chatting experience for users across different platforms and devices.
+
+
+need to handle client waiting as server is busy
+(try a post request)
+fork in js
+5 minutes waiting time -- try to set using nginx 

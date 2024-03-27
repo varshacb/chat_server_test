@@ -9,7 +9,9 @@ from pydantic import BaseModel
 from bson.objectid import ObjectId
 from starlette.middleware.sessions import SessionMiddleware
 from main import alter_semaphore
-
+import os
+import asyncio
+# from dotenv import load_dotenv
 
 app = FastAPI()
 
@@ -18,7 +20,7 @@ SECRET_KEY = "bkhkjpo"
 
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-
+# load_dotenv()
 # client = MongoClient("mongodb+srv://last:last1@pythoncluster.0zzvm.mongodb.net/")
 # database = client["server_db"]
 # collection_name = 'server_connections'
@@ -44,10 +46,14 @@ class ConnectionManager:
 
 
 	async def broadcast(self, message: str, websocket: WebSocket):
-		for connection in self.active_connections:
-			if(connection == websocket):
-				continue
-			await connection.send_text(message)
+		print("inside broadcast method ")
+		tasks = [connection.send_text(message) for connection in self.active_connections]
+		await asyncio.gather(*tasks)	
+			# if(connection == websocket):
+			# 	continue
+			# await connection.send_text(message)
+	
+
 
 connectionmanager = ConnectionManager()
 
@@ -55,17 +61,25 @@ connectionmanager = ConnectionManager()
 def generate_session_id():
     return secrets.token_hex(16)  
 
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "X-Backend-Port"
+    return response
 
 @app.get("/")
 async def home(request: Request):
+	server_port = os.environ.get("PORT")
+	print("hi",server_port)
 	session = request.session
 	session_id = generate_session_id()
 	session["session_id"] = session_id
 	session["username"]="client#"
 	# print("hello"+session.get("session_id"))
-	port = request.query_params.get('var', '')
-	dict={'port':port}
-	return templates.TemplateResponse("index.html", {"request" : request, **dict})
+	# port = request.query_params.get('var', '')
+	# dict={'port':port}
+	return templates.TemplateResponse("index.html", {"request" : request, "port": server_port})
 
 @app.websocket("/ws/{client_id}/{server_id}")
 async def websocket_endpoint(websocket: WebSocket,client_id: int):
@@ -110,6 +124,7 @@ async def logout(request: Request,server_id:str):
 
 
 def run_server(port):
+	os.environ["PORT"]=str(port)
 	uvicorn.run(app, host="127.0.0.1", port = port)
 
 if __name__ == "__main__":

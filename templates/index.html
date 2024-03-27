@@ -34,6 +34,8 @@
 			max = Math.floor(max);
 			return Math.floor(Math.random() * (max - min + 1)) + min;
 		}
+		var hostname = window.location.hostname;
+		console.log(hostname)
 
 		let minNumber = 1;
 		let maxNumber = 100;
@@ -43,11 +45,14 @@
 		
 		port="{{port}}"
 		console.log(typeof(port))
+		console.log(port)
 		document.getElementById('server').innerText = `Connected to server running at port : ${port}`;
 		
 
 		const websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/0`);
+
 		websocket.onopen = function(event) {
+
 			console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
 		};
 		websocket.onmessage = function(event) {
