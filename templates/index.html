@@ -27,15 +27,8 @@
 		updateDateTime();
 		let randomFloat = Math.random();
         console.log('Random Float:', randomFloat);
-
-		// Generate a random integer between min (inclusive) and max (inclusive)
-		function getRandomInt(min, max) {
-			min = Math.ceil(min);
-			max = Math.floor(max);
-			return Math.floor(Math.random() * (max - min + 1)) + min;
-		}
-		var hostname = window.location.hostname;
-		console.log(hostname)
+		let retryCount = 0;
+		const maxRetries = 60; 
 
 		let minNumber = 1;
 		let maxNumber = 100;
@@ -46,22 +39,65 @@
 		port="{{port}}"
 		console.log(typeof(port))
 		console.log(port)
-		document.getElementById('server').innerText = `Connected to server running at port : ${port}`;
+		var websocket;
+		createWebSocketConnection()
+
+		function createWebSocketConnection(){
+			websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/0`);
+			console.log("he",websocket);
+			document.getElementById('server').innerText = `Connected to server running at port : ${port}`;
 		
 
-		const websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/0`);
+			websocket.onopen = function(event) {
 
-		websocket.onopen = function(event) {
+				console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
 
-			console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
-		};
-		websocket.onmessage = function(event) {
-		const messageContainer = document.getElementById("messageContainer");
-		messageContainer.innerHTML += `<p>${event.data}</p>`;
 			};
-	   websocket.onerror = function(event) {
-		console.error("WebSocket error", event);
-	   };
+
+			websocket.onmessage = function(event) {
+			const messageContainer = document.getElementById("messageContainer");
+			messageContainer.innerHTML += `<p>${event.data}</p>`;
+				};
+		
+
+			websocket.onerror = function(event) {
+
+			console.error('WebSocket connection error:', event);
+			if (retryCount < maxRetries) {
+				retryCount++;
+				console.log(`Retry attempt ${retryCount} in 1 second.`);
+				setTimeout(createWebSocketConnection, 1000); 
+
+			} 
+			else {
+				console.log('Max retries reached. Closing WebSocket connection.');
+				websocket.close(); 
+				displayErrorMessage('Failed to establish WebSocket connection.');
+			}
+
+			};
+			websocket.onclose = function(event) {
+
+				console.log(`WebSocket connection closingg`);
+
+				};
+
+
+	   }
+
+	   function getRandomInt(min, max) {
+			min = Math.ceil(min);
+			max = Math.floor(max);
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+		function updateDateTime() {
+		const currentDate = new Date();
+		const formattedDateTime = currentDate.toLocaleString();
+		document.getElementById('dateTimeDisplay').innerText = formattedDateTime;
+		setInterval(updateDateTime, 1000);
+
+		}
 
 		function sendMessage() {
         const messageInput = document.getElementById("messageInput");
@@ -70,16 +106,7 @@
 		websocket.send(message);
 		messageInput.value = "";
         }
-		window.addEventListener('beforeunload', function (e) {
-            fetch('/logout/'+port, { method: 'POST' });
-        });
-		function updateDateTime() {
-		const currentDate = new Date();
-		const formattedDateTime = currentDate.toLocaleString();
-		document.getElementById('dateTimeDisplay').innerText = formattedDateTime;
-		setInterval(updateDateTime, 1000);
 
-		}
 
 		function getRating(){
 			var form = document.createElement("form");
@@ -104,9 +131,23 @@
 
 
 
+
+
+		
+
+
+
 	</script>
 </body>
-
+<!-- window.addEventListener('beforeunload', function (e) {
+	fetch('/logout/'+port, { method: 'POST' });
+}); -->
+<!-- websocket.onerror = function(event) {
+	console.error("WebSocket error", event);
+   }; -->
 </html>
 
 
+<!-- separate websocket objects are being created each time the client tries to reconnect to the server
+and the connection gets closed once the websocket fails to get established
+the server connects to each of the webserver connections but since the old ones are closed it connects to the open one-->
