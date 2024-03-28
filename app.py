@@ -17,7 +17,7 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 SECRET_KEY = "bkhkjpo"
-semaphore = asyncio.Semaphore(1)
+semaphore = asyncio.Semaphore(50)
 app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
 
 
@@ -41,8 +41,9 @@ class ConnectionManager:
 
 
 	async def broadcast(self, message: str, websocket: WebSocket):
-		# print("inside broadcast method ")
+		# print(message )
 		tasks = [connection.send_text(message) for connection in self.active_connections if connection != websocket]
+		# tasks = [connection.send_text(message) for connection in self.active_connections if connection != websocket]
 		await asyncio.gather(*tasks)	
 			# if(connection == websocket):
 			# 	continue
@@ -121,76 +122,5 @@ if __name__ == "__main__":
 		for process in processes:
 			process.join()
 
-
-
-
-# async with semaphore:
-#         await connection_manager.connect(websocket)
-#         try:
-#             while True:
-#                 data = await websocket.receive_text()
-#                 await connection_manager.send_personal_message(f"You : {data}", websocket)
-#                 await connection_manager.broadcast(f"Client {client_id}#: {data}", websocket)
-#         except WebSocketDisconnect:
-#             connection_manager.disconnect(websocket)
-			
-
-
-# set semaphore variable and if the server is busy send message to the client and ask it to wait handled it in 
-# client side the waiting of the client if it can be like a timeout dont use sleep polling method that keeps checking the availability
-# of the server and eventually allocates server or smthg maybe the client will hit the lh:80 if the semaphore is updated to a lesser value
-			
-# @app.post("/logout/{server_id}")
-# async def logout(request: Request,server_id:str):
-# 		# s=server_id
-# 		session=request.session
-# 		# print("hello")
-# 		if "session_id" in session:
-# 			session.pop("session_id")
-# 			session.pop("username")
-
-# 		server_string="http://localhost:"+server_id
-# 		# print("the closed server:"+string_build)
-# 		f = open('server_connections.json')
-# 		data = json.load(f)
-# 		dict = data["server_connections"]
-# 		f.close()
-# 		for key in dict:
-# 			if(key == server_string):
-# 				dict[key]-=1
-# 		f1 = open('server_connections.json','w')
-# 		# print(dict)
-# 		data['server_connections'] = dict
-# 		json.dump(data,f1)
-		# print("done")
-			
-
-# async with semaphore:
-	# 	await connectionmanager.connect(websocket)
-
-# if await semaphore.acquire():
-#         try:
-#             print(f'Task {task_id} starting')
-#             await asyncio.sleep(2)  # Simulating some asynchronous operation
-#             print(f'Task {task_id} completed')
-#         finally:
-#             semaphore.release()  # Release the semaphore after the task completes
-#     else:
-#         print(f'Task {task_id} could not acquire semaphore, it is not available')
-
-# async def try_connection(websocket:WebSocket):
-# 	max_wait_time = 120
-# 	start_time = time.time()
-# 	elapsed_time = 0
-# 	while elapsed_time < max_wait_time:
-# 		if await semaphore.acquire():
-# 			try:
-# 				await connectionmanager.connect(websocket)
-# 				return
-# 			except:
-# 				semaphore.release()
-# 		elapsed_time = time.time() - start_time
-# 		if(elapsed_time >= max_wait_time):
-# 			return {"unable to acquire"}  
 
 
