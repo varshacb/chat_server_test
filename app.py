@@ -8,16 +8,16 @@ from pymongo import MongoClient
 from pydantic import BaseModel
 from bson.objectid import ObjectId
 from starlette.middleware.sessions import SessionMiddleware
-from main import alter_semaphore
 import os
 import asyncio
+import websockets
 # from dotenv import load_dotenv
 import time
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 SECRET_KEY = "bkhkjpo"
-semaphore = asyncio.Semaphore(50)
+semaphore = asyncio.Semaphore(20)
 app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
 
 
@@ -43,12 +43,8 @@ class ConnectionManager:
 	async def broadcast(self, message: str, websocket: WebSocket):
 		# print(message )
 		tasks = [connection.send_text(message) for connection in self.active_connections if connection != websocket]
-		# tasks = [connection.send_text(message) for connection in self.active_connections if connection != websocket]
 		await asyncio.gather(*tasks)	
-			# if(connection == websocket):
-			# 	continue
-			# await connection.send_text(message)
-	
+			
 
 connectionmanager = ConnectionManager()
 
@@ -73,20 +69,15 @@ async def try_connection(websocket: WebSocket):
 			semaphore.release() 
 			raise
    
-
-
 @app.get("/")
 async def home(request: Request):
 	server_port = os.environ.get("PORT")
-	print("hi",server_port)
+	# print("hi",server_port)
 	session = request.session
 	session_id = generate_session_id()
 	session["session_id"] = session_id
 	session["username"]="client#"
-	# print("hello"+session.get("session_id"))
-	# port = request.query_params.get('var', '')
-	# dict={'port':port}
-	# semaphore-=1
+	
 	return templates.TemplateResponse("index.html", {"request" : request, "port": server_port})
 
 
@@ -94,7 +85,7 @@ async def home(request: Request):
 async def websocket_endpoint(websocket: WebSocket,client_id: int):
 	
 	try:
-		await try_connection(websocket)  # await wait_and_connect(websocket)
+		await try_connection(websocket)
 		while True:
 
 			data = await websocket.receive_text() 
@@ -124,3 +115,18 @@ if __name__ == "__main__":
 
 
 
+# ws = websockets.connect("ws://localhost:8000/ws")
+	# print(ws)
+	# ws_json=json.dumps({'url':ws.url, 'headers':ws.headers})
+	# os.environ["WS"]=ws_json
+# print("hello"+session.get("session_id"))
+	# port = request.query_params.get('var', '')
+	# dict={'port':port}
+	# semaphore-=1
+			
+
+
+# ws_json = os.getenv("WS")
+# ws_data=json.loads(ws_json)
+# ws_restore=websockets.connect(ws_data['url'],header=ws_data['headers'])
+# print(ws_restore)

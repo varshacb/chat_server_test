@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Chat Server </title>
+</head>
+
+<body>
+	<h1>Chat Window </h1>
+	<div id="client">
+	</div>
+	<div id="server"></div>
+	<div id="dateTimeDisplay"></div>
+	<br><br>
+
+	<input type="text" id="messageInput" placeholder="Enter message">
+	<button id="submitButton" onclick="sendMessage()">Send</button>
+	<div id="messageContainer"></div>
+	<br><br>
+	<button id="finishButton" onclick="getRating()">Finish</button>
+	<div id="ratingForm"></div>
+
+
+	<script>
+		updateDateTime();
+		let randomFloat = Math.random();
+        console.log('Random Float:', randomFloat);
+		let retryCount = 0;
+		const maxRetries = 60; 
+
+		let minNumber = 1;
+		let maxNumber = 100;
+		let client_id = getRandomInt(minNumber, maxNumber);
+		console.log('Random Integer:', client_id);
+		document.getElementById('client').innerText = `CLIENT # ${client_id}`;
+		
+		port="{{port}}"
+		console.log(typeof(port))
+		console.log(port)
+		var websocket;
+		createWebSocketConnection()
+
+		function createWebSocketConnection(){
+			websocket=new WebSocket("ws://localhost:8001"+`/ws/${client_id}/0`);
+			console.log("he",websocket);
+			document.getElementById('server').innerText = `Connected to server running at port : ${port}`;
+		
+
+			websocket.onopen = function(event) {
+
+				console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
+
+			};
+
+			websocket.onmessage = function(event) {
+			const messageContainer = document.getElementById("messageContainer");
+			messageContainer.innerHTML += `<p>${event.data}</p>`;
+				};
+		
+
+			websocket.onerror = function(event) {
+
+			console.error('WebSocket connection error:', event);
+			if (retryCount < maxRetries) {
+				retryCount++;
+				console.log(`Retry attempt ${retryCount} in 1 second.`);
+				setTimeout(createWebSocketConnection, 1000); 
+
+			} 
+			else {
+				console.log('Max retries reached. Closing WebSocket connection.');
+				websocket.close(); 
+				displayErrorMessage('Failed to establish WebSocket connection.');
+			}
+
+			};
+			websocket.onclose = function(event) {
+
+				console.log(`WebSocket connection closingg`);
+
+				};
+
+
+	   }
+
+	   function getRandomInt(min, max) {
+			min = Math.ceil(min);
+			max = Math.floor(max);
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+		function updateDateTime() {
+		const currentDate = new Date();
+		const formattedDateTime = currentDate.toLocaleString();
+		document.getElementById('dateTimeDisplay').innerText = formattedDateTime;
+		setInterval(updateDateTime, 1000);
+
+		}
+
+		function sendMessage() {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value;
+
+		websocket.send(message);
+		messageInput.value = "";
+        }
+
+
+		function getRating(){
+			var form = document.createElement("form");
+			// form.setAttribute("method", "post");
+			// form.setAttribute("method", "post");
+			// var action = "/logout/"+port
+			// form.setAttribute("action", "/");
+			var FN = document.createElement("input");
+			FN.setAttribute("type", "number");
+			FN.setAttribute("name", "Rating");
+			FN.setAttribute("placeholder", "Rate the communication (1 to 5)");
+			var s = document.createElement("input");
+			s.setAttribute("type", "submit");
+			s.setAttribute("value", "Submit");
+			form.appendChild(FN); 
+			// form.appendChild(br.cloneNode()); 
+			form.appendChild(s); 
+
+			document.getElementById("ratingForm").appendChild(form) ;
+
+		}
+
+	</script>
+</body>
+
+</html>
+
