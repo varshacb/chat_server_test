@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fork test</title>
+</head>
+
+<body>
+    <h1>Chat Window </h1>
+    <div id="client">
+    </div>
+    <div id="server"></div>
+    <br><br>
+
+
+    <input type="text" id="messageInput" placeholder="Enter message">
+    <button id="submitButton" onclick="sendMessage()">Send</button>
+    <div id="messageContainer"></div>
+    <br><br>
+
+    <script>
+        websocket = new WebSocket("ws://localhost:8000/ws1");
+
+        websocket.onopen = function (event) {
+
+            console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
+
+        };
+
+        websocket.onmessage = function (event) {
+            const messageContainer = document.getElementById("messageContainer");
+            messageContainer.innerHTML += `<p>${event.data}</p>`;
+        };
+
+
+        websocket.onerror = function (event) {
+
+            console.error('WebSocket connection error:', event);
+        };
+        websocket.onclose = function(event) {
+
+            console.log(`WebSocket connection closingg`);
+
+        };
+        function sendMessage() {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value;
+
+		websocket.send(message);
+		messageInput.value = "";
+        }
+    </script>
+</body>
+
+</html>

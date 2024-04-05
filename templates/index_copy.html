@@ -14,7 +14,8 @@
 	<div id="server"></div>
 	<div id="dateTimeDisplay"></div>
 	<br><br>
-
+    <div id="error"></div>
+	<br><br>
 	<input type="text" id="messageInput" placeholder="Enter message">
 	<button id="submitButton" onclick="sendMessage()">Send</button>
 	<div id="messageContainer"></div>
@@ -51,6 +52,7 @@
 			websocket.onopen = function(event) {
 
 				console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
+				document.getElementById("error").innerText="websocket connection established";
 
 			};
 
@@ -63,6 +65,7 @@
 			websocket.onerror = function(event) {
 
 			console.error('WebSocket connection error:', event);
+			document.getElementById('error').innerText="trying to connect to server";
 			if (retryCount < maxRetries) {
 				retryCount++;
 				console.log(`Retry attempt ${retryCount} in 1 second.`);
@@ -78,7 +81,7 @@
 			};
 			websocket.onclose = function(event) {
 
-				console.log(`WebSocket connection closingg`);
+				console.log(`WebSocket connection closing`);
 
 				};
 

@@ -11,6 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 import os
 import asyncio
 import websockets
+from multiprocessing import Semaphore
 # from dotenv import load_dotenv
 import time
 
@@ -18,7 +19,7 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 SECRET_KEY = "bkhkjpo"
-semaphore = asyncio.Semaphore(20)
+semaphore = Semaphore(1)
 app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
 
 
@@ -59,11 +60,11 @@ async def add_cors_headers(request: Request, call_next):
     response.headers["Access-Control-Allow-Headers"] = "X-Backend-Port"
     return response
 
-async def try_connection(websocket: WebSocket):
+def try_connection(websocket: WebSocket):
 	global semaphore
-	if await semaphore.acquire():
+	if semaphore.acquire():
 		try:
-			await connectionmanager.connect(websocket)
+			connectionmanager.connect(websocket)
 			return  
 		except:
 			semaphore.release() 
@@ -80,23 +81,28 @@ async def home(request: Request):
 	
 	return templates.TemplateResponse("index_copy.html", {"request" : request, "port": server_port})
 
+def handle_client(websocket: WebSocket):
+	while True:
+		data = websocket.receive_text() 
+		if not data:
+			break
+		websocket.send(data)
+		
+	websocket.close()
+
 
 @app.websocket("/ws/{client_id}/{server_id}")
-async def websocket_endpoint(websocket: WebSocket,client_id: int):
-	
-	try:
-		await try_connection(websocket)
-		while True:
+def websocket_endpoint(websocket: WebSocket,client_id: int):
+	while True:
+		try_connection(websocket)
+		pid = os.fork()
+		if pid == 0:
+			handle_client(websocket)
+			os._exit(0)
+		else:
+			return
+            
 
-			data = await websocket.receive_text() 
-			await connectionmanager.send_personal_message(f"You : {data}", websocket) 
-			await connectionmanager.broadcast(f"Client {client_id}#: {data}", websocket)
-
-	except WebSocketDisconnect:
-		connectionmanager.disconnect(websocket)
-
-	finally:
-		semaphore.release()
 		
 def run_server(port):
 	os.environ["PORT"]=str(port)
@@ -114,19 +120,3 @@ if __name__ == "__main__":
 			process.join()
 
 
-
-# ws = websockets.connect("ws://localhost:8000/ws")
-	# print(ws)
-	# ws_json=json.dumps({'url':ws.url, 'headers':ws.headers})
-	# os.environ["WS"]=ws_json
-# print("hello"+session.get("session_id"))
-	# port = request.query_params.get('var', '')
-	# dict={'port':port}
-	# semaphore-=1
-			
-
-
-# ws_json = os.getenv("WS")
-# ws_data=json.loads(ws_json)
-# ws_restore=websockets.connect(ws_data['url'],header=ws_data['headers'])
-# print(ws_restore)

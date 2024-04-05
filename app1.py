@@ -27,8 +27,8 @@ class ConnectionManager:
 		self.active_connections: List[WebSocket] = []
 
 
-	def connect(self, websocket: WebSocket):
-		websocket.accept()
+	async def connect(self, websocket: WebSocket):
+		await websocket.accept()
 		self.active_connections.append(websocket)
 
 
@@ -36,17 +36,17 @@ class ConnectionManager:
 		self.active_connections.remove(websocket)
 
 
-	def send_personal_message(self, message: str, websocket: WebSocket):
-		websocket.send_text(message)
+	async def send_personal_message(self, message: str, websocket: WebSocket):
+		await websocket.send_text(message)
 
 
 	async def broadcast(self, message: str, websocket: WebSocket):
-		tasks = [connection.send_text(message) for connection in self.active_connections if connection != websocket]
-		await asyncio.gather(*tasks)	
+		# tasks = [connection.send_text(message) for connection in self.active_connections if connection != websocket]
+		# await asyncio.gather(*tasks)	
 		# print(message )
-		# for connection in self.active_connections:
-		# 	if connection != websocket:
-		# 		connection.send_text(message)
+		for connection in self.active_connections:
+			if connection != websocket:
+				connection.send_text(message)
 			
 
 connectionmanager = ConnectionManager()
@@ -75,7 +75,6 @@ async def try_connection(websocket: WebSocket):
 @app.get("/")
 async def home(request: Request):
 	server_port = os.environ.get("PORT")
-	# print("hi",server_port)
 	session = request.session
 	session_id = generate_session_id()
 	session["session_id"] = session_id
@@ -86,30 +85,25 @@ async def home(request: Request):
 
 async def handle_client(websocket: WebSocket):
 	try:
-		connectionmanager.connect(websocket)
 		while True:
 
-			data = websocket.receive_text() 
+			data = await websocket.receive_text() 
 			connectionmanager.send_personal_message(f"You : {data}", websocket) 
 			connectionmanager.broadcast(f"Client#: {data}", websocket)
 
 	except WebSocketDisconnect:
 		connectionmanager.disconnect(websocket)
 
-    # while True:
-    #     data = await websocket.receive_text()
-    #     await websocket.send_text(f"Received: {data}")
-
-
 @app.websocket("/ws/{client_id}/{server_id}")
-def websocket_endpoint(websocket: WebSocket,client_id: int):
+async def websocket_endpoint(websocket: WebSocket,client_id: int):
+	await websocket.accept()
 	
-    pid = os.fork()
-    if pid == 0:  # Child process
-        handle_client(websocket)
-        os._exit(0)  # Exit child process
-    else:  # Parent process
-        return 
+	pid = os.fork()
+	if pid == 0:  
+		await handle_client(websocket)
+		os._exit(0)  
+	else: 
+		return 
     
 def run_server(port):
 	os.environ["PORT"]=str(port)
@@ -129,19 +123,3 @@ if __name__ == "__main__":
 	
 
 
-
-# ws = websockets.connect("ws://localhost:8000/ws")
-	# print(ws)
-	# ws_json=json.dumps({'url':ws.url, 'headers':ws.headers})
-	# os.environ["WS"]=ws_json
-# print("hello"+session.get("session_id"))
-	# port = request.query_params.get('var', '')
-	# dict={'port':port}
-	# semaphore-=1
-			
-
-
-# ws_json = os.getenv("WS")
-# ws_data=json.loads(ws_json)
-# ws_restore=websockets.connect(ws_data['url'],header=ws_data['headers'])
-# print(ws_restore)
