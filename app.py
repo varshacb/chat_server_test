@@ -20,6 +20,7 @@ SECRET_KEY = "bkhkjpo"
 semaphore = asyncio.Semaphore(20)
 request_count = 0
 log_lock=multiprocessing.Lock()
+
 app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
 
 class ConnectionManager:
@@ -64,6 +65,7 @@ async def try_connection(websocket: WebSocket):
    
 @app.get("/")
 async def home(request: Request):
+	print(multiprocessing.get_start_method())
 
 	
 	server_port = os.environ.get("PORT")
@@ -72,7 +74,7 @@ async def home(request: Request):
 	session["session_id"] = session_id
 	session["username"]="client#"
 	
-	return templates.TemplateResponse("index_copy.html", {"request" : request, "port": server_port})
+	return templates.TemplateResponse("index.html", {"request" : request, "port": server_port})
 
 
 @app.websocket("/ws/{client_id}/{server_id}")
@@ -93,8 +95,8 @@ async def websocket_endpoint(websocket: WebSocket,client_id: int,server_id:str):
 		response_time = (end_time - start_time)/message_count
 		throughput = message_count/(end_time-start_time)
 		with log_lock:
-			with open("server.txt",'a') as log:
-				log.write(f"Server id :{server_id}      response time : {response_time}          throughput : {throughput} \n")
+			with open("server_log.txt",'a') as log:
+				log.write(f"Server id :{server_id}      response time : {response_time:.2f}          throughput : {throughput:.2f} \n")
 		connectionmanager.disconnect(websocket)
 
 	finally:

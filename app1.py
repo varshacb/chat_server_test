@@ -130,19 +130,21 @@ async def websocket_endpt(websocket:WebSocket):
 
 def run_server(port):
 	os.environ["PORT"]=str(port)
+	
 	# ws = websockets.connect("ws://localhost:6000/ws")
 	uvicorn.run("app:app", host="127.0.0.1", port = port)
 
-if __name__ == "__main__":
-		processes=[]
-		ports=[8001,8002,8003]
-		for port in ports:
-			process = multiprocessing.Process(target = run_server,args = (port,))
-			process.start()
-			processes.append(process)
+# if __name__ == "__main__":
+processes=[]
+ports=[8001,8002,8003]
+print(multiprocessing.get_start_method())
+for port in ports:
+	process = multiprocessing.Process(target = run_server,args = (port,))
+	process.start()
+	processes.append(process)
 
-		for process in processes:
-			process.join()
+for process in processes:
+	process.join()
 
 
 

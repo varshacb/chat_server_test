@@ -7,7 +7,7 @@ import psutil
 
 
 p = psutil.Process()
-# 100 clients, 1000 messages and 3 servers
+
 log_lock = threading.Lock()
 count = 100
 with open("message.txt",'r') as file:
@@ -19,7 +19,7 @@ async def connect_to_websocket(server_addr,count):
     retries = 20
     for attempt in range(retries+1):
         try:
-            st=time.time()
+            
         
             async with websockets.connect(uri) as websocket:
                 for message in data:
@@ -28,9 +28,7 @@ async def connect_to_websocket(server_addr,count):
                     with log_lock:
                         with open("test_log.txt", 'a') as log:
                             log.write(f"Client{count}      {t}       {server_addr[10::]}           {message} \n ")     
-                et=time.time() 
-                response_time = et - st
-                # print(response_time/1000) 
+               
                 break
         except Exception as e:
             if attempt < retries:
@@ -62,26 +60,12 @@ for t in client_threads:
     t.join()
 
 io = p.io_counters()
-print(io)
+print("Read chars:",io.read_chars)
+print("Write chars:", io.write_chars)
+
 
 
 end_time = time.time()
 
-
-
-
-# num_clients = 100
-# messages_per_client = 1000
-# num_servers = 3
-# total_time = end_time - start_time
-# speed = (num_clients * messages_per_client * num_servers) / total_time
-# load_factor = total_time / (num_clients * messages_per_client)
-
-# print("speed :",speed)
-# print("load_factor :",load_factor)
-# print("total_time :",total_time)
-
-
-
-print(end_time-start_time)
+print("load test time:",end_time-start_time)
 

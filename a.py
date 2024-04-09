@@ -1,18 +1,36 @@
+import multiprocessing
+
+# initialize the value
+num = 10
+def childprocess():
+
+	# refer to the global variable
+	global num 
+	print(f"In child process before update: {num}")
+
+	#updating num value
+	num+= 1
+
+	print(f"In child process after update: {num}")
 
 
-import psutil
+def mainprocess():
 
-# Get the process object for the Python file
-p = psutil.Process()
+	# refer to the global variable
+	global num 
+	print(f"In parent process before update {num}")
 
+	#updating num value
+	num = 20
 
-with open("messages.txt", "a") as file:
-    file.write("H")
+	print(f"In parent process after update: {num}")
+	process = multiprocessing.Process(target = childprocess)
+	process.start()
+	process.join()
+	print(f"At the end the vaule is: {num}")
 
+if __name__ == '__main__':
 
-
-# Get the disk I/O activity for the process
-io = p.io_counters()
-
-# Print the disk I/O activity
-print(io)
+	# multiprocessing.set_start_method('fork')
+	print(multiprocessing.get_start_method())
+	mainprocess()
