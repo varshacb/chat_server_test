@@ -44,14 +44,14 @@
 		createWebSocketConnection()
 
 		function createWebSocketConnection(){
-			websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/0`);
+			websocket=new WebSocket("ws://localhost:"+port+`/ws/${client_id}/${port}`);
 			console.log("he",websocket);
 			document.getElementById('server').innerText = `Connected to server running at port : ${port}`;
 		
 
 			websocket.onopen = function(event) {
 
-				console.log(`WebSocket connection established.ws://localhost:8001/ws/${client_id}`);
+				console.log(`WebSocket connection established.ws://localhost:${port}/ws/${client_id}`);
 				document.getElementById("error").innerText="websocket connection established";
 
 			};

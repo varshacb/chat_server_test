@@ -29,8 +29,8 @@ class ConnectionManager:
 		self.active_connections: List[WebSocket] = []
 
 
-	async def connect(self, websocket: WebSocket):
-		await websocket.accept()
+	def connect(self, websocket: WebSocket):
+		websocket.accept()
 		self.active_connections.append(websocket)
 
 
@@ -62,14 +62,26 @@ async def add_cors_headers(request: Request, call_next):
 
 def try_connection(websocket: WebSocket):
 	global semaphore
+	print("inside try_con")
 	if semaphore.acquire():
 		try:
+			print("inside try ...")
 			connectionmanager.connect(websocket)
 			return  
 		except:
 			semaphore.release() 
 			raise
-   
+		
+limit=1
+def conn(websocket:WebSocket):
+	if(limit>0):
+		connectionmanager.connect(websocket)
+		limit-=1
+	else:
+		print("server busy")
+	
+
+
 @app.get("/")
 async def home(request: Request):
 	server_port = os.environ.get("PORT")
@@ -92,21 +104,34 @@ def handle_client(websocket: WebSocket):
 
 
 @app.websocket("/ws/{client_id}/{server_id}")
-def websocket_endpoint(websocket: WebSocket,client_id: int):
-	while True:
-		try_connection(websocket)
-		pid = os.fork()
-		if pid == 0:
-			handle_client(websocket)
-			os._exit(0)
-		else:
-			return
+async def websocket_endpoint(websocket: WebSocket,client_id: int):
+	try:
+		# conn(websocket)
+		while True:
+			websocket.accept()
+			print("indide while")
+			pid = os.fork()
+			print("after fork")
+			if pid == 0:
+				print("inside child")
+				handle_client(websocket)
+				os._exit(0)
+			else:
+				return
+	except WebSocketDisconnect:
+		connectionmanager.disconnect(websocket)
+
+	# finally:
+	# 	limit+=1
+		
+	# print("inside ws endpoint")
+	
             
 
 		
 def run_server(port):
 	os.environ["PORT"]=str(port)
-	uvicorn.run("app:app", host="127.0.0.1", port = port)
+	uvicorn.run("fork:app", host="127.0.0.1", port = port)
 
 if __name__ == "__main__":
 		processes=[]

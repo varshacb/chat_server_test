@@ -1,0 +1,6 @@
+# et = datetime.now()
+                # tt = et - st
+                # with resp_lock:
+                #     with open("response_time.txt", 'a') as resp_log :
+                #         resp_log.write(f"response time:{tt}")
+                

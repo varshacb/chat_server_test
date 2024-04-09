@@ -11,7 +11,6 @@ from starlette.middleware.sessions import SessionMiddleware
 import os
 import asyncio
 import websockets
-# from dotenv import load_dotenv
 import time
 
 app = FastAPI()
@@ -19,8 +18,9 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 SECRET_KEY = "bkhkjpo"
 semaphore = asyncio.Semaphore(20)
+request_count = 0
+log_lock=multiprocessing.Lock()
 app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
-
 
 class ConnectionManager:
 
@@ -52,13 +52,6 @@ connectionmanager = ConnectionManager()
 def generate_session_id():
     return secrets.token_hex(16)  
 
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "X-Backend-Port"
-    return response
-
 async def try_connection(websocket: WebSocket):
 	global semaphore
 	if await semaphore.acquire():
@@ -71,8 +64,9 @@ async def try_connection(websocket: WebSocket):
    
 @app.get("/")
 async def home(request: Request):
+
+	
 	server_port = os.environ.get("PORT")
-	# print("hi",server_port)
 	session = request.session
 	session_id = generate_session_id()
 	session["session_id"] = session_id
@@ -82,51 +76,52 @@ async def home(request: Request):
 
 
 @app.websocket("/ws/{client_id}/{server_id}")
-async def websocket_endpoint(websocket: WebSocket,client_id: int):
+async def websocket_endpoint(websocket: WebSocket,client_id: int,server_id:str):	
 	
 	try:
 		await try_connection(websocket)
-		while True:
-
+		message_count = 0 
+		start_time = time.time()
+		while True:	
+			message_count += 1
 			data = await websocket.receive_text() 
 			await connectionmanager.send_personal_message(f"You : {data}", websocket) 
 			await connectionmanager.broadcast(f"Client {client_id}#: {data}", websocket)
 
 	except WebSocketDisconnect:
+		end_time = time.time() 
+		response_time = (end_time - start_time)/message_count
+		throughput = message_count/(end_time-start_time)
+		with log_lock:
+			with open("server.txt",'a') as log:
+				log.write(f"Server id :{server_id}      response time : {response_time}          throughput : {throughput} \n")
 		connectionmanager.disconnect(websocket)
 
 	finally:
 		semaphore.release()
+
+
 		
 def run_server(port):
 	os.environ["PORT"]=str(port)
 	uvicorn.run("app:app", host="127.0.0.1", port = port)
 
 if __name__ == "__main__":
-		processes=[]
-		ports=[8001,8002,8003]
-		for port in ports:
-			process = multiprocessing.Process(target = run_server,args = (port,))
-			process.start()
-			processes.append(process)
+	processes=[]
+	ports=[8001,8002,8003]
+	for port in ports:
+		process = multiprocessing.Process(target = run_server,args = (port,))
+		process.start()
+		processes.append(process)
 
-		for process in processes:
-			process.join()
-
-
-
-# ws = websockets.connect("ws://localhost:8000/ws")
-	# print(ws)
-	# ws_json=json.dumps({'url':ws.url, 'headers':ws.headers})
-	# os.environ["WS"]=ws_json
-# print("hello"+session.get("session_id"))
-	# port = request.query_params.get('var', '')
-	# dict={'port':port}
-	# semaphore-=1
-			
+	for process in processes:
+		process.join()
 
 
-# ws_json = os.getenv("WS")
-# ws_data=json.loads(ws_json)
-# ws_restore=websockets.connect(ws_data['url'],header=ws_data['headers'])
-# print(ws_restore)
+
+
+
+
+
+
+
