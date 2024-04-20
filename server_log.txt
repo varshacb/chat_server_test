@@ -221,3 +221,13 @@ Server id :8002      response time : 0.01          throughput : 72.03 Server id 
 Server id :0      response time : 6.50          throughput : 0.15 
 Server id :0      response time : 9.17          throughput : 0.11 
 Server id :0      response time : 32.06          throughput : 0.03 
+Server id :0      response time : 37.41          throughput : 0.03 
+Server id :0      response time : 33.11          throughput : 0.03 
+Server id :0      response time : 14.58          throughput : 0.07 
+Server id :0      response time : 31.07          throughput : 0.03 
+Server id :0      response time : 19.07          throughput : 0.05 
+Server id :0      response time : 14.24          throughput : 0.07 
+Server id :0      response time : 35.39          throughput : 0.03 
+Server id :0      response time : 42.61          throughput : 0.02 
+Server id :0      response time : 12.42          throughput : 0.08 
+Server id :0      response time : 82.78          throughput : 0.01 

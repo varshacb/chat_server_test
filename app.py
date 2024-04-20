@@ -10,9 +10,8 @@ from bson.objectid import ObjectId
 from starlette.middleware.sessions import SessionMiddleware
 import os
 import asyncio
-import websockets
 import time
-
+import threading
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
@@ -126,4 +125,4 @@ if __name__ == "__main__":
 
 
 
-
+# ted
